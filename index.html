@@ -1,0 +1,195 @@
+<!DOCTYPE html><html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quiz 22 Soal - A/B/C/D</title>
+  <style>
+    :root{
+      --bg:#0f1220; --card:#151937; --ink:#e7ebff; --muted:#aab3ff; --accent:#6c8cff; --good:#2ecc71; --bad:#ff5c5c;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Helvetica,Arial,sans-serif;background:radial-gradient(1200px 600px at 80% -10%, #1f2460 0%, #0f1220 55%), var(--bg);color:var(--ink);}
+    .wrap{max-width:900px;margin:32px auto;padding:16px}
+    header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px}
+    h1{font-size:clamp(20px,3.2vw,32px);margin:0}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));border:1px solid rgba(255,255,255,.08);box-shadow:0 10px 30px rgba(0,0,0,.25);border-radius:18px;padding:18px}
+    .controls{display:flex;gap:10px;flex-wrap:wrap}
+    button{appearance:none;border:1px solid rgba(255,255,255,.12);background:var(--card);color:var(--ink);padding:10px 14px;border-radius:12px;cursor:pointer;font-weight:600;transition:.2s}
+    button:hover{transform:translateY(-1px);box-shadow:0 6px 18px rgba(0,0,0,.3)}
+    button.primary{background:linear-gradient(180deg,var(--accent),#4f6cff);border-color:transparent}
+    .meta{color:var(--muted);font-size:14px}.q{margin:14px 0 20px;border-radius:14px;padding:14px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.02)}
+.q-title{font-weight:700;margin-bottom:10px}
+.opts{display:grid;grid-template-columns:1fr;gap:10px}
+.opt{display:flex;align-items:center;gap:10px;padding:10px;border:1px solid rgba(255,255,255,.08);border-radius:12px;cursor:pointer}
+.opt input{accent-color:var(--accent);}
+.opt.correct{outline:2px solid color-mix(in oklab, var(--good) 65%, white 0%);background:rgba(46,204,113,.1)}
+.opt.wrong{outline:2px solid color-mix(in oklab, var(--bad) 65%, white 0%);background:rgba(255,92,92,.08)}
+.badge{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;border:1px solid rgba(255,255,255,.18);color:var(--muted)}
+
+.score{font-size:20px;font-weight:800}
+.hidden{display:none}
+.footer-note{font-size:12px;color:var(--muted);margin-top:8px}
+
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Quiz Pilihan Ganda – 22 Soal</h1>
+      <div class="meta">
+        <span id="progress" class="badge">0/22 terjawab</span>
+      </div>
+    </header><div class="card" id="intro">
+  <p>Pilih jawaban A/B/C/D untuk tiap soal. Klik <b>Periksa Nilai</b> saat selesai. Soal campuran (Matematika, IPA, IPS, B. Indonesia, Umum),random dari gw.</p>
+  <div class="controls">
+    <button class="primary" id="startBtn">Mulai Quiz</button>
+    <button id="resetBtn" class="hidden">Ulangi</button>
+  </div>
+  <p class="footer-note">Catatan: WEB INI DI BUAT OLEH DEVELOPER Putzz XD,SORY YA KALO ACAK² KAN, "AKU AKAN MEMBUAT SOAL YANG LEBIH BAYAK DARI INI</p>
+</div>
+
+<div id="quiz" class="card hidden"></div>
+
+<div id="result" class="card hidden">
+  <div class="score" id="scoreText"></div>
+  <p id="feedback"></p>
+  <div class="controls">
+    <button id="retryBtn">Coba Lagi</button>
+  </div>
+</div>
+
+  </div>  <script>
+  // ======== DATA SOAL (22) ========
+  const QUESTIONS = [
+    {cat:'Matematika', q:'Hasil dari 12 × 8 adalah …', a:['80','88','92','96'], k:3},
+    {cat:'IPA', q:'Planet terdekat dengan Matahari adalah …', a:['Venus','Merkurius','Bumi','Mars'], k:1},
+    {cat:'IPS', q:'Ibu kota Indonesia adalah …', a:['Bandung','Surabaya','Jakarta','Yogyakarta'], k:2},
+    {cat:'B. Indonesia', q:'Antonim dari “besar” adalah …', a:['tinggi','kecil','lebar','jauh'], k:1},
+    {cat:'Umum', q:'Warna pada bendera Indonesia dari atas ke bawah adalah …', a:['Merah – Putih','Putih – Merah','Merah – Hitam','Hitam – Putih'], k:0},
+    {cat:'Matematika', q:'Nilai 3^3 adalah …', a:['6','9','27','81'], k:2},
+    {cat:'IPA', q:'Bagian tumbuhan yang berfungsi menyerap air adalah …', a:['Daun','Akar','Batang','Bunga'], k:1},
+    {cat:'IPS', q:'Mata angin yang berlawanan dengan Timur adalah …', a:['Barat','Utara','Selatan','Tenggara'], k:0},
+    {cat:'B. Indonesia', q:'Kalimat yang menggunakan huruf kapital dengan benar adalah …', a:['saya Tinggal di bandung.','Saya tinggal Di Bandung.','Saya tinggal di Bandung.','saya Tinggal Di bandung.'], k:2},
+    {cat:'Umum', q:'1 jam sama dengan … menit.', a:['30','45','60','90'], k:2},
+    {cat:'Matematika', q:'Hasil 45 : 5 adalah …', a:['8','9','10','12'], k:1},
+    {cat:'IPA', q:'Pernafasan pada ikan dibantu oleh …', a:['Paru-paru','Insang','Trakea','Stomata'], k:1},
+    {cat:'IPS', q:'Benua terbesar di dunia adalah …', a:['Afrika','Amerika','Asia','Eropa'], k:2},
+    {cat:'B. Indonesia', q:'Kata baku yang benar adalah …', a:['Resiko','Aktifitas','Praktik','Ijazahh'], k:2},
+    {cat:'Umum', q:'Hari Kemerdekaan RI diperingati setiap …', a:['17 Agustus','20 Mei','1 Juni','10 November'], k:0},
+    {cat:'Matematika', q:'Keliling persegi dengan sisi 7 cm adalah …', a:['21 cm','28 cm','35 cm','49 cm'], k:1},
+    {cat:'IPA', q:'Perubahan wujud dari cair ke gas disebut …', a:['Mencair','Menguap','Menyublim','Membeku'], k:1},
+    {cat:'IPS', q:'Lambang negara Indonesia adalah …', a:['Bendera','Garuda Pancasila','Sang Saka','Burung Elang'], k:1},
+    {cat:'B. Indonesia', q:'Ejaan yang benar untuk “sekedar” adalah …', a:['sekedar','sekadar','sekedarh','sekedarr'], k:1},
+    {cat:'Umum', q:'Alat musik tradisional dari Jawa Barat adalah …', a:['Sasando','Angklung','Gamelan Bali','Tifa'], k:1},
+        {cat:'ngarang', q:'ikan ikan apa yang gak boleh kena air?…', a:['ikan bakar','ikan goreng','ikan ikanan🗿','ikan mati'], k:1},
+        {cat:'Umum', q:'siapa yang menciptakan web ini? …', a:['putradev','zuradev','depay','10 dray'], k:0},
+        {cat:'randong dari gw', q:'benda"apa mati di atas hidup di atas? …', a:['ace','angin','lampu','kipas'], k:2},
+        {cat:'random dari gw', q:'hantu apa yang kelihatan setiap hari apa hayo🗿 …', a:['kunti','pocong','hantu','Burung hantu'], k:3},
+        {cat:'random dari gw', q:'apa yang selalu naik tapi gak bisa turun…', a:['tai🗿','layangan','tangga','umur'], k:3},
+        {cat:'random dari gw', q:'ikan ikan apa yang bisa berhenti?…', a:['ikan pauus','ikan gurame','ikan tongkol','ikan apa aja boleh🗿'], k:0},
+        {cat:'B. Indonesia', q:'Apa yang selalu ada di depan kita,tapi tidak bisa di lihat …', a:['masa lalu','masa depan','waktu sekarang','bayangan'], k:1},
+        {cat:'matematika', q:'Sebuah bak mandi dapat menampung 100 liter air. Jika sudah terisi 75 liter,berapa liter lagi yang dibutuhkan untuk memenuhi bak mandi …', a:['30','25','15','20'], k:1},
+        {cat:'matematika', q:'Sebuh buku memiliki 200 halaman.jika kamu telah membaca 50 halaman, berapa halaman yang belum di baca …', a:['250','150','110','200'], k:1},
+  ];
+
+  // ======== RENDER ========
+  const quizEl = document.getElementById('quiz');
+  const resultEl = document.getElementById('result');
+  const scoreText = document.getElementById('scoreText');
+  const feedback = document.getElementById('feedback');
+  const progress = document.getElementById('progress');
+
+  function renderQuiz(){
+    quizEl.innerHTML = '';
+    QUESTIONS.forEach((it, idx)=>{
+      const q = document.createElement('div');
+      q.className = 'q';
+      q.innerHTML = `
+        <div class="q-title"><span class="badge">${idx+1}/22 • ${it.cat}</span> &nbsp; ${it.q}</div>
+        <div class="opts">
+          ${it.a.map((opt,i)=>{
+            const id = `q${idx}_o${i}`;
+            const letter = ['A','B','C','D'][i];
+            return `
+              <label class="opt" id="lab_${id}">
+                <input type="radio" name="q${idx}" id="${id}" value="${i}" />
+                <span><b>${letter}.</b> ${opt}</span>
+              </label>
+            `;
+          }).join('')}
+        </div>
+      `;
+      quizEl.appendChild(q);
+    });
+
+    const ctrl = document.createElement('div');
+    ctrl.className = 'controls';
+    ctrl.innerHTML = `<button class="primary" id="submitBtn">Periksa Nilai</button>`;
+    quizEl.appendChild(ctrl);
+
+    quizEl.addEventListener('change', updateProgress);
+    document.getElementById('submitBtn').addEventListener('click', grade);
+    updateProgress();
+  }
+
+  function updateProgress(){
+    const answered = QUESTIONS.reduce((n,_,i)=> n + (document.querySelector(`input[name=q${i}]:checked`)?1:0), 0);
+    progress.textContent = `${answered}/22 terjawab`;
+  }
+
+  function grade(){
+    let score = 0;
+    // clear previous classes
+    document.querySelectorAll('.opt').forEach(el=>el.classList.remove('correct','wrong'));
+
+    QUESTIONS.forEach((it, idx)=>{
+      const checked = document.querySelector(`input[name=q${idx}]:checked`);
+      const correctIndex = it.k;
+      if(checked){
+        const val = +checked.value;
+        const label = document.getElementById(`lab_q${idx}_o${val}`);
+        if(val === correctIndex){
+          score++;
+          label.classList.add('correct');
+        } else {
+          label.classList.add('wrong');
+          // highlight the correct one
+          const goodLab = document.getElementById(`lab_q${idx}_o${correctIndex}`);
+          goodLab.classList.add('correct');
+        }
+      } else {
+        const goodLab = document.getElementById(`lab_q${idx}_o${correctIndex}`);
+        goodLab.classList.add('correct');
+      }
+      // lock inputs
+      document.querySelectorAll(`input[name=q${idx}]`).forEach(inp=>inp.disabled = true);
+    });
+
+    scoreText.textContent = `Nilai kamu: ${score}/22`;
+    let msg = 'Mantap!';
+    if(score === 22) msg = 'Sempurna! 🎉';
+    else if(score >= 16) msg = 'Hebat! Tetap pertahankan.';
+    else if(score >= 12) msg = 'Cukup bagus, tetap belajar!';
+    else if(score >= 8) msg = 'Masih perlu latihan lagi.';
+    else msg = 'Ayo semangat belajar lagi!';
+    feedback.textContent = msg;
+
+    document.getElementById('result').classList.remove('hidden');
+    window.scrollTo({top:document.body.scrollHeight, behavior:'smooth'});
+  }
+
+  // ======== FLOW ========
+  document.getElementById('startBtn').addEventListener('click', ()=>{
+    document.getElementById('quiz').classList.remove('hidden');
+    document.getElementById('resetBtn').classList.remove('hidden');
+    renderQuiz();
+  });
+
+  document.getElementById('resetBtn').addEventListener('click', ()=>{
+    location.reload();
+  });
+  document.getElementById('retryBtn').addEventListener('click', ()=>{
+    location.reload();
+  });
+  </script></body>
+</html>
