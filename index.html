@@ -23,9 +23,9 @@
             padding: 20px;
         }
 
-        /* Panel utama */
+        /* Panel dasar */
         .mod-panel {
-            width: 340px;
+            width: 360px;
             max-width: 90vw;
             background: rgba(12, 15, 25, 0.75);
             backdrop-filter: blur(15px);
@@ -36,7 +36,7 @@
             transition: transform 0.2s ease;
         }
 
-        /* Header dengan developer name */
+        /* Header */
         .panel-header {
             background: linear-gradient(135deg, #0a0f1f 0%, #0b1120 100%);
             padding: 18px 20px;
@@ -69,7 +69,6 @@
             text-shadow: 0 0 4px #00ffff;
         }
 
-        /* Badge versi */
         .version-badge {
             position: absolute;
             top: 12px;
@@ -92,7 +91,7 @@
             gap: 18px;
         }
 
-        /* Card untuk setiap fitur */
+        /* Card untuk fitur */
         .feature-card {
             background: rgba(20, 25, 40, 0.6);
             backdrop-filter: blur(5px);
@@ -171,42 +170,6 @@
             gap: 6px;
         }
 
-        /* Slider */
-        .slider-container {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin: 10px 0 5px;
-        }
-        input[type="range"] {
-            flex: 1;
-            height: 5px;
-            -webkit-appearance: none;
-            background: #2a2f3f;
-            border-radius: 5px;
-            outline: none;
-        }
-        input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            width: 18px;
-            height: 18px;
-            background: #0ff;
-            border-radius: 50%;
-            cursor: pointer;
-            box-shadow: 0 0 5px #0ff;
-            border: none;
-        }
-        .slider-value {
-            font-weight: bold;
-            color: #0ff;
-            background: rgba(0,255,255,0.2);
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            min-width: 55px;
-            text-align: center;
-        }
-
         /* Login area */
         .login-area {
             display: flex;
@@ -253,7 +216,6 @@
             text-align: center;
         }
 
-        /* Footer */
         .footer {
             text-align: center;
             padding: 12px;
@@ -262,7 +224,7 @@
             color: #888;
         }
 
-        /* Efek glow animasi */
+        /* Animasi pulse */
         @keyframes pulse {
             0% { text-shadow: 0 0 2px #0ff; }
             100% { text-shadow: 0 0 8px #0ff; }
@@ -271,150 +233,114 @@
             animation: pulse 1.5s infinite alternate;
         }
 
-        /* Sembunyikan fitur jika belum login */
-        .feature-card {
-            transition: opacity 0.3s;
+        /* Sembunyikan menu mod awal */
+        .menu-container {
+            display: none;
         }
-        .disabled-overlay {
-            opacity: 0.5;
-            pointer-events: none;
-            filter: blur(1px);
+
+        /* Jika login sukses, tampilkan menu, sembunyikan login */
+        .login-container {
+            display: block;
+        }
+        body.logged-in .login-container {
+            display: none;
+        }
+        body.logged-in .menu-container {
+            display: block;
         }
     </style>
 </head>
 <body>
     <div class="mod-panel">
         <div class="panel-header">
-            <div class="version-badge">v2.0.1</div>
+            <div class="version-badge">v3.0</div>
             <h1>MOD MENU</h1>
-            <div class="developer">by <span>Putzzdev</span> | Exclusive Release</div>
+            <div class="developer">by <span>Putzzdev</span> | Exclusive</div>
         </div>
 
-        <div class="panel-content">
-            <!-- Login Card -->
-            <div class="feature-card" id="loginCard">
-                <div class="card-title">
-                    <i>🔐</i> <span>AUTHENTICATION</span>
-                </div>
-                <div class="login-area">
-                    <div class="input-group">
-                        <input type="text" id="username" placeholder="Username" value="Putzzdev">
-                        <input type="password" id="password" placeholder="Password" value="modmenu">
+        <!-- Container Login -->
+        <div class="login-container">
+            <div class="panel-content">
+                <div class="feature-card">
+                    <div class="card-title">
+                        <i>🔐</i> <span>AUTHENTICATION</span>
                     </div>
-                    <button id="loginBtn">UNLOCK FEATURES</button>
-                    <div id="loginStatus" class="login-status">🔒 Masukkan kredensial untuk mengakses fitur</div>
+                    <div class="login-area">
+                        <div class="input-group">
+                            <input type="text" id="username" placeholder="Username" value="Putzzdev">
+                            <input type="password" id="password" placeholder="Password" value="modmenu">
+                        </div>
+                        <button id="loginBtn">UNLOCK MOD MENU</button>
+                        <div id="loginStatus" class="login-status">🔒 Masukkan kredensial untuk mengakses menu</div>
+                    </div>
                 </div>
-            </div>
-
-            <!-- Fitur Aim Silence (mulai disembunyikan sampai login) -->
-            <div class="feature-card locked-feature" id="aimSilenceCard">
-                <div class="card-title">
-                    <i>🤫</i> <span>AIM SILENCE</span>
-                </div>
-                <div class="toggle-row">
-                    <span style="color:#ccc;">Status</span>
-                    <div id="silenceToggle" class="toggle-switch"></div>
-                </div>
-                <div id="silenceStatus" class="status-text">⚡ Nonaktif</div>
-            </div>
-
-            <!-- Fitur Aimbot 30% -->
-            <div class="feature-card locked-feature" id="aimbotCard">
-                <div class="card-title">
-                    <i>🎯</i> <span>AIMBOT 30%</span>
-                </div>
-                <div class="toggle-row">
-                    <span style="color:#ccc;">Mode 30% lock</span>
-                    <div id="aimbotToggle" class="toggle-switch"></div>
-                </div>
-                <div id="aimbotStatus" class="status-text">⚡ Nonaktif</div>
-            </div>
-
-            <!-- Fitur Aim Body Slider -->
-            <div class="feature-card locked-feature" id="aimBodyCard">
-                <div class="card-title">
-                    <i>💀</i> <span>AIM BODY</span>
-                </div>
-                <div class="slider-container">
-                    <span style="font-size:0.85rem;">Target Body %</span>
-                    <input type="range" id="bodySlider" min="0" max="100" value="45">
-                    <span id="bodyValue" class="slider-value">45%</span>
-                </div>
-                <div id="bodyStatus" class="status-text">📍 Priority: Body 45%</div>
             </div>
         </div>
+
+        <!-- Container Menu Mod (awal tersembunyi) -->
+        <div class="menu-container">
+            <div class="panel-content">
+                <!-- Fitur Aimbot 30% -->
+                <div class="feature-card">
+                    <div class="card-title">
+                        <i>🎯</i> <span>AIMBOT 30%</span>
+                    </div>
+                    <div class="toggle-row">
+                        <span style="color:#ccc;">Status</span>
+                        <div id="aimbotToggle" class="toggle-switch"></div>
+                    </div>
+                    <div id="aimbotStatus" class="status-text">⚡ Nonaktif</div>
+                </div>
+
+                <!-- Fitur Aim Body (nyala/mati) -->
+                <div class="feature-card">
+                    <div class="card-title">
+                        <i>💪</i> <span>AIM BODY</span>
+                    </div>
+                    <div class="toggle-row">
+                        <span style="color:#ccc;">Status</span>
+                        <div id="bodyToggle" class="toggle-switch"></div>
+                    </div>
+                    <div id="bodyStatus" class="status-text">⚡ Nonaktif</div>
+                </div>
+
+                <!-- Fitur Aim Leher (neck) -->
+                <div class="feature-card">
+                    <div class="card-title">
+                        <i>🦴</i> <span>AIM LEHER</span>
+                    </div>
+                    <div class="toggle-row">
+                        <span style="color:#ccc;">Status</span>
+                        <div id="neckToggle" class="toggle-switch"></div>
+                    </div>
+                    <div id="neckStatus" class="status-text">⚡ Nonaktif</div>
+                </div>
+            </div>
+        </div>
+
         <div class="footer">
             © 2026 Putzzdev | Advanced Overlay Panel
         </div>
     </div>
 
     <script>
-        // ========== LOGIN SIMULASI ==========
-        let isLoggedIn = false;
+        // ========== LOGIN HANDLER ==========
         const loginBtn = document.getElementById('loginBtn');
         const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
         const loginStatusDiv = document.getElementById('loginStatus');
 
-        // Ambil semua fitur yang terkunci
-        const lockedFeatures = document.querySelectorAll('.locked-feature');
-
-        function unlockFeatures() {
-            lockedFeatures.forEach(feature => {
-                feature.classList.remove('disabled-overlay');
-                feature.style.opacity = '1';
-                feature.style.filter = 'none';
-                feature.style.pointerEvents = 'auto';
-            });
-            loginStatusDiv.innerHTML = '✅ ACCESS GRANTED | Selamat datang, Modder!';
-            loginStatusDiv.style.color = '#0ff';
-            loginStatusDiv.style.textShadow = '0 0 2px #0ff';
-        }
-
-        function lockFeatures() {
-            lockedFeatures.forEach(feature => {
-                feature.classList.add('disabled-overlay');
-                feature.style.opacity = '0.5';
-                feature.style.filter = 'blur(1px)';
-                feature.style.pointerEvents = 'none';
-            });
-            loginStatusDiv.innerHTML = '🔒 Akses ditolak. Login untuk menggunakan fitur.';
-            loginStatusDiv.style.color = '#ffaa44';
-        }
-
-        // Simulasi login (cukup username dan password tidak kosong)
         loginBtn.addEventListener('click', () => {
             const user = usernameInput.value.trim();
             const pass = passwordInput.value.trim();
             if (user !== '' && pass !== '') {
-                isLoggedIn = true;
-                unlockFeatures();
+                // Login sukses: tambahkan class logged-in ke body
+                document.body.classList.add('logged-in');
+                // Opsional: set status login berhasil di console
+                console.log('Login sukses, menu mod muncul.');
             } else {
-                isLoggedIn = false;
-                lockFeatures();
-                alert('Masukkan username dan password terlebih dahulu!');
-            }
-        });
-
-        // Awal: fitur terkunci
-        lockFeatures();
-
-        // ========== AIM SILENCE TOGGLE ==========
-        const silenceToggle = document.getElementById('silenceToggle');
-        const silenceStatus = document.getElementById('silenceStatus');
-        let silenceActive = false;
-
-        silenceToggle.addEventListener('click', () => {
-            if (!isLoggedIn) return;
-            silenceActive = !silenceActive;
-            if (silenceActive) {
-                silenceToggle.classList.add('active');
-                silenceStatus.innerHTML = '✅ ACTIVE | No recoil + silent aim engaged';
-                silenceStatus.style.color = '#0ff';
-            } else {
-                silenceToggle.classList.remove('active');
-                silenceStatus.innerHTML = '⚡ Nonaktif';
-                silenceStatus.style.color = '#aaa';
+                loginStatusDiv.innerHTML = '❌ Username dan password tidak boleh kosong!';
+                loginStatusDiv.style.color = '#ff5555';
             }
         });
 
@@ -424,11 +350,10 @@
         let aimbotActive = false;
 
         aimbotToggle.addEventListener('click', () => {
-            if (!isLoggedIn) return;
             aimbotActive = !aimbotActive;
             if (aimbotActive) {
                 aimbotToggle.classList.add('active');
-                aimbotStatus.innerHTML = '🎯 ACTIVE | Aimbot 30% lock-on active';
+                aimbotStatus.innerHTML = '✅ ACTIVE | Aimbot 30% lock-on engaged';
                 aimbotStatus.style.color = '#0ff';
             } else {
                 aimbotToggle.classList.remove('active');
@@ -437,29 +362,50 @@
             }
         });
 
-        // ========== AIM BODY SLIDER ==========
-        const bodySlider = document.getElementById('bodySlider');
-        const bodyValueSpan = document.getElementById('bodyValue');
-        const bodyStatusSpan = document.getElementById('bodyStatus');
+        // ========== AIM BODY TOGGLE ==========
+        const bodyToggle = document.getElementById('bodyToggle');
+        const bodyStatus = document.getElementById('bodyStatus');
+        let bodyActive = false;
 
-        bodySlider.addEventListener('input', () => {
-            if (!isLoggedIn) return;
-            const val = bodySlider.value;
-            bodyValueSpan.innerText = val + '%';
-            bodyStatusSpan.innerHTML = `🎯 Priority: Body ${val}% (auto-aim area)`;
-            bodyStatusSpan.style.color = '#0ff';
+        bodyToggle.addEventListener('click', () => {
+            bodyActive = !bodyActive;
+            if (bodyActive) {
+                bodyToggle.classList.add('active');
+                bodyStatus.innerHTML = '✅ ACTIVE | Priority aim ke body aktif';
+                bodyStatus.style.color = '#0ff';
+            } else {
+                bodyToggle.classList.remove('active');
+                bodyStatus.innerHTML = '⚡ Nonaktif';
+                bodyStatus.style.color = '#aaa';
+            }
         });
 
-        // Inisialisasi status slider
-        bodySlider.dispatchEvent(new Event('input'));
+        // ========== AIM LEHER TOGGLE ==========
+        const neckToggle = document.getElementById('neckToggle');
+        const neckStatus = document.getElementById('neckStatus');
+        let neckActive = false;
 
-        // Efek tambahan: saat login, beri notifikasi style pada header
+        neckToggle.addEventListener('click', () => {
+            neckActive = !neckActive;
+            if (neckActive) {
+                neckToggle.classList.add('active');
+                neckStatus.innerHTML = '✅ ACTIVE | Target area: Leher (neck)';
+                neckStatus.style.color = '#0ff';
+            } else {
+                neckToggle.classList.remove('active');
+                neckStatus.innerHTML = '⚡ Nonaktif';
+                neckStatus.style.color = '#aaa';
+            }
+        });
+
+        // Efek tambahan: jika login sukses, header border berkilau
         loginBtn.addEventListener('click', () => {
-            if (isLoggedIn) {
-                document.querySelector('.panel-header').style.borderBottom = '1px solid #0ff';
+            if (document.body.classList.contains('logged-in')) {
+                const header = document.querySelector('.panel-header');
+                header.style.borderBottom = '1px solid #0ff';
                 setTimeout(() => {
-                    document.querySelector('.panel-header').style.borderBottom = '1px solid rgba(0, 255, 255, 0.5)';
-                }, 1000);
+                    header.style.borderBottom = '1px solid rgba(0, 255, 255, 0.5)';
+                }, 800);
             }
         });
     </script>
