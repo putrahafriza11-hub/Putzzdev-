@@ -1,413 +1,1987 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Mod Menu | Putzzdev</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tic-Tac-Toe Pro + Online</title>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js">
+    </script>
+
     <style>
+        /* ----- RESET & BASE ----- */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
         }
-
         body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: 'Poppins', 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: radial-gradient(circle at 20% 30%, rgba(10, 20, 30, 0.95), rgba(0, 0, 0, 0.98));
-            padding: 20px;
+            background: #0f0c29;
+            padding: 16px;
+            transition: background 0.4s;
+        }
+        body.light {
+            background: #f5f3f0;
+        }
+        body.light .game-container {
+            background: rgba(255, 255, 255, 0.85);
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+        body.light .cell {
+            background: rgba(0, 0, 0, 0.04);
+            color: #222;
+        }
+        body.light .title {
+            -webkit-text-fill-color: #222;
+        }
+        body.light .turn-indicator,
+        body.light .score-board,
+        body.light .mode-btn {
+            color: #222;
+        }
+        body.light .mode-btn.active {
+            background: linear-gradient(135deg, #f7971e, #ffd200);
+            color: #1a1a2e;
+        }
+        body.light .btn-secondary {
+            background: rgba(0, 0, 0, 0.06);
+            color: #222;
+            border-color: rgba(0, 0, 0, 0.1);
+        }
+        body.light .btn-secondary:hover {
+            background: rgba(0, 0, 0, 0.12);
+        }
+        body.light .settings-btn {
+            color: #222;
         }
 
-        /* Panel dasar */
-        .mod-panel {
-            width: 360px;
-            max-width: 90vw;
-            background: rgba(12, 15, 25, 0.75);
-            backdrop-filter: blur(15px);
-            border-radius: 32px;
-            border: 1px solid rgba(0, 255, 255, 0.3);
-            box-shadow: 0 20px 35px rgba(0, 0, 0, 0.5), 0 0 15px rgba(0, 255, 255, 0.2);
-            overflow: hidden;
-            transition: transform 0.2s ease;
+        .game-container {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-radius: 48px;
+            padding: 24px 22px;
+            max-width: 720px;
+            width: 100%;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.7);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            transition: 0.3s;
         }
 
-        /* Header */
-        .panel-header {
-            background: linear-gradient(135deg, #0a0f1f 0%, #0b1120 100%);
-            padding: 18px 20px;
-            text-align: center;
-            border-bottom: 1px solid rgba(0, 255, 255, 0.5);
-            position: relative;
-        }
-
-        .panel-header h1 {
-            font-size: 1.9rem;
-            font-weight: 800;
-            background: linear-gradient(120deg, #00ffff, #ff00cc);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            letter-spacing: 1px;
-            text-shadow: 0 0 8px rgba(0, 255, 255, 0.3);
-        }
-
-        .developer {
-            font-size: 0.8rem;
-            color: #aaa;
-            margin-top: 5px;
-            letter-spacing: 1px;
-        }
-
-        .developer span {
-            color: #00ffff;
-            font-weight: bold;
-            text-shadow: 0 0 4px #00ffff;
-        }
-
-        .version-badge {
-            position: absolute;
-            top: 12px;
-            right: 15px;
-            background: rgba(0, 255, 255, 0.2);
-            backdrop-filter: blur(4px);
-            padding: 4px 8px;
-            border-radius: 20px;
-            font-size: 0.65rem;
-            font-weight: bold;
-            color: #0ff;
-            border: 1px solid rgba(0, 255, 255, 0.4);
-        }
-
-        /* Konten panel */
-        .panel-content {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-        }
-
-        /* Card untuk fitur */
-        .feature-card {
-            background: rgba(20, 25, 40, 0.6);
-            backdrop-filter: blur(5px);
-            border-radius: 24px;
-            padding: 14px 18px;
-            border: 1px solid rgba(0, 255, 255, 0.2);
-            transition: all 0.2s;
-        }
-
-        .feature-card:hover {
-            border-color: rgba(0, 255, 255, 0.6);
-            box-shadow: 0 0 10px rgba(0, 255, 255, 0.2);
-        }
-
-        .card-title {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-weight: 600;
-            font-size: 1.1rem;
-            margin-bottom: 15px;
-            color: #eee;
-        }
-
-        .card-title i {
-            font-size: 1.3rem;
-            color: #0ff;
-            text-shadow: 0 0 5px #0ff;
-        }
-
-        /* Toggle switch */
-        .toggle-switch {
-            width: 52px;
-            height: 28px;
-            background: #2a2f3f;
-            border-radius: 40px;
-            position: relative;
-            cursor: pointer;
-            transition: 0.2s;
-            box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
-        }
-        .toggle-switch.active {
-            background: linear-gradient(90deg, #00ccff, #0099ff);
-            box-shadow: 0 0 8px #00ccff;
-        }
-        .toggle-switch::after {
-            content: "";
-            width: 24px;
-            height: 24px;
-            background: white;
-            border-radius: 50%;
-            position: absolute;
-            top: 2px;
-            left: 2px;
-            transition: 0.2s;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-        .toggle-switch.active::after {
-            left: 26px;
-            background: #fff;
-        }
-
-        .toggle-row {
+        /* ----- HEADER ----- */
+        .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .title {
+            font-size: 24px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #f7971e, #ffd200);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .settings-btn {
+            background: transparent;
+            border: none;
+            font-size: 26px;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.6);
+            transition: 0.3s;
+            padding: 4px 8px;
+            border-radius: 30px;
+        }
+        .settings-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+            transform: rotate(60deg);
+        }
+        .mode-toggle {
+            display: flex;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.07);
+            padding: 4px;
+            border-radius: 40px;
+        }
+        .mode-btn {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.25s;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .mode-btn.active {
+            background: linear-gradient(135deg, #f7971e, #ffd200);
+            color: #1a1a2e;
+            box-shadow: 0 4px 15px rgba(247, 151, 30, 0.35);
+        }
+        .mode-btn.online {
+            background: rgba(78, 205, 196, 0.2);
+            color: #4ecdc4;
+        }
+        .mode-btn.online.active {
+            background: linear-gradient(135deg, #4ecdc4, #44bd9e);
+            color: #1a1a2e;
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.35);
         }
 
-        .status-text {
-            font-size: 0.75rem;
-            color: #aaa;
-            margin-top: 8px;
-            letter-spacing: 0.5px;
+        /* ----- STATUS BAR ----- */
+        .status-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 14px;
+            color: #fff;
+        }
+        .turn-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px 14px 4px 10px;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .turn-icon {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            font-size: 18px;
+            line-height: 30px;
+            text-align: center;
+            font-weight: 700;
+            transition: 0.3s;
+        }
+        .turn-icon.x {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: #fff;
+        }
+        .turn-icon.o {
+            background: linear-gradient(135deg, #4ecdc4, #44bd9e);
+            color: #fff;
+        }
+        .score-board {
+            display: flex;
+            gap: 14px;
+            font-size: 14px;
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.04);
+            padding: 4px 16px;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            flex-wrap: wrap;
+        }
+        .score-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .score-item .num {
+            font-weight: 700;
+            font-size: 17px;
+            min-width: 20px;
+            text-align: center;
+            color: #fff;
+        }
+        body.light .score-item .num {
+            color: #222;
+        }
+        .timer-display {
+            font-size: 18px;
+            font-weight: 700;
+            color: #ffd700;
+            min-width: 50px;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 12px;
+            border-radius: 30px;
+        }
+        .online-status {
+            font-size: 13px;
+            background: rgba(78, 205, 196, 0.15);
+            padding: 4px 14px;
+            border-radius: 30px;
+            border: 1px solid rgba(78, 205, 196, 0.2);
+            color: #4ecdc4;
+        }
+
+        /* ----- BOARD ----- */
+        .board-wrapper {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 14px;
+        }
+        .board {
+            display: grid;
+            gap: 10px;
+            width: 100%;
+            max-width: 440px;
+            aspect-ratio: 1/1;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 32px;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+        .cell {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 48px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s ease;
+            color: #fff;
+            aspect-ratio: 1/1;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            user-select: none;
+            position: relative;
+        }
+        body.light .cell {
+            color: #222;
+        }
+        .cell:hover:not(.taken):not(.game-over) {
+            background: rgba(255, 255, 255, 0.12);
+            transform: scale(1.02);
+        }
+        .cell.taken {
+            cursor: default;
+        }
+        .cell.x-move {
+            color: #ff6b6b;
+            text-shadow: 0 0 30px rgba(255, 107, 107, 0.25);
+        }
+        .cell.o-move {
+            color: #4ecdc4;
+            text-shadow: 0 0 30px rgba(78, 205, 196, 0.25);
+        }
+        .cell.win-highlight {
+            animation: winPulse 0.9s ease-in-out infinite alternate;
+            border-color: #ffd700;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.25);
+        }
+        @keyframes winPulse {
+            0% {
+                transform: scale(1);
+                background: rgba(255, 215, 0, 0.08);
+            }
+            100% {
+                transform: scale(1.06);
+                background: rgba(255, 215, 0, 0.20);
+            }
+        }
+        .cell.draw-highlight {
+            animation: drawPulse 1s ease-in-out infinite alternate;
+            border-color: #a29bfe;
+            box-shadow: 0 0 30px rgba(162, 155, 254, 0.15);
+        }
+        @keyframes drawPulse {
+            0% {
+                transform: scale(1);
+                background: rgba(162, 155, 254, 0.04);
+            }
+            100% {
+                transform: scale(1.03);
+                background: rgba(162, 155, 254, 0.12);
+            }
+        }
+        .cell.pop {
+            animation: pop 0.2s ease;
+        }
+        @keyframes pop {
+            0% {
+                transform: scale(0.5);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* ----- EMOJI BAR ----- */
+        .emoji-bar {
+            display: flex;
+            gap: 6px;
+            justify-content: center;
+            margin: 6px 0 10px;
+        }
+        .emoji-btn {
+            font-size: 24px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            transition: 0.2s;
+            padding: 2px 6px;
+            border-radius: 30px;
+        }
+        .emoji-btn:hover {
+            transform: scale(1.3);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        /* ----- ACTIONS ----- */
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+        .btn {
+            padding: 8px 18px;
+            border: none;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.25s;
+            color: #fff;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #f7971e, #ffd200);
+            color: #1a1a2e;
+            border: none;
+            box-shadow: 0 4px 16px rgba(247, 151, 30, 0.25);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(247, 151, 30, 0.35);
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+        .btn:active {
+            transform: scale(0.96);
+        }
+        .btn-online {
+            background: linear-gradient(135deg, #4ecdc4, #44bd9e);
+            color: #1a1a2e;
+            border: none;
+            box-shadow: 0 4px 16px rgba(78, 205, 196, 0.25);
+        }
+        .btn-online:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(78, 205, 196, 0.35);
+        }
+
+        /* ----- STATUS MESSAGE ----- */
+        .status-msg {
+            text-align: center;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.3);
+            margin-top: 6px;
+            transition: 0.3s;
+        }
+
+        /* ----- MODAL PENGATURAN ----- */
+        .settings-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .settings-overlay.show {
+            display: flex;
+        }
+        .settings-card {
+            background: rgba(30, 27, 75, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 40px;
+            padding: 30px 35px;
+            max-width: 520px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6);
+            color: #fff;
+        }
+        .settings-card h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: 600;
+            font-size: 22px;
+            background: linear-gradient(135deg, #f7971e, #ffd200);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .settings-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px 16px;
+            justify-content: center;
+            margin-bottom: 8px;
+        }
+        .settings-group label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
             display: flex;
             align-items: center;
             gap: 6px;
         }
-
-        /* Login area */
-        .login-area {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
+        .settings-group select,
+        .settings-group input[type="number"] {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 13px;
+            outline: none;
+            width: 80px;
         }
-        .input-group {
+        .settings-group select option {
+            background: #1a1a2e;
+            color: #fff;
+        }
+        body.light .settings-card {
+            background: rgba(245, 243, 240, 0.95);
+            color: #222;
+        }
+        body.light .settings-group label {
+            color: #222;
+        }
+        body.light .settings-group select,
+        body.light .settings-group input[type="number"] {
+            background: rgba(0, 0, 0, 0.06);
+            color: #222;
+            border-color: rgba(0, 0, 0, 0.15);
+        }
+        body.light .settings-group select option {
+            background: #fff;
+            color: #222;
+        }
+        .close-settings-btn {
+            display: block;
+            margin: 18px auto 0;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #fff;
+            padding: 8px 30px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+        .close-settings-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        body.light .close-settings-btn {
+            color: #222;
+            background: rgba(0, 0, 0, 0.06);
+        }
+        body.light .close-settings-btn:hover {
+            background: rgba(0, 0, 0, 0.12);
+        }
+
+        /* ----- MODAL ONLINE ----- */
+        .online-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+        }
+        .online-overlay.show {
             display: flex;
-            gap: 8px;
+        }
+        .online-card {
+            background: rgba(30, 27, 75, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 40px;
+            padding: 30px 35px;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6);
+            color: #fff;
+        }
+        .online-card h2 {
+            font-size: 24px;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #4ecdc4, #44bd9e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .online-card p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+            margin-bottom: 18px;
+        }
+        .online-card input {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+            padding: 10px 16px;
+            border-radius: 30px;
+            font-size: 18px;
+            text-align: center;
+            width: 140px;
+            outline: none;
+            letter-spacing: 4px;
+        }
+        .online-card .btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-top: 16px;
             flex-wrap: wrap;
         }
-        input {
-            flex: 1;
-            padding: 12px 14px;
-            background: rgba(10, 15, 25, 0.8);
-            border: 1px solid rgba(0, 255, 255, 0.3);
-            border-radius: 28px;
-            color: white;
-            font-size: 0.9rem;
-            outline: none;
-            transition: 0.2s;
+        .online-card .btn {
+            min-width: 100px;
         }
-        input:focus {
-            border-color: #0ff;
-            box-shadow: 0 0 8px rgba(0,255,255,0.3);
+        .online-card .error-msg {
+            color: #ff6b6b;
+            font-size: 13px;
+            margin-top: 10px;
+            min-height: 20px;
         }
-        button {
-            background: linear-gradient(90deg, #00aaff, #0077ff);
+        body.light .online-card {
+            background: rgba(245, 243, 240, 0.95);
+            color: #222;
+        }
+        body.light .online-card p {
+            color: rgba(0, 0, 0, 0.6);
+        }
+        body.light .online-card input {
+            background: rgba(0, 0, 0, 0.06);
+            color: #222;
+            border-color: rgba(0, 0, 0, 0.15);
+        }
+
+        /* ----- MODAL HASIL ----- */
+        .result-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(8px);
+            z-index: 999;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.35s ease;
+        }
+        .result-overlay.show {
+            display: flex;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.92);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        .result-card {
+            background: rgba(30, 27, 75, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 48px;
+            padding: 30px 35px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6);
+        }
+        .result-card .emoji {
+            font-size: 56px;
+            display: block;
+        }
+        .result-card .msg {
+            font-size: 26px;
+            font-weight: 700;
+            color: #fff;
+        }
+        .result-card .sub {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.5);
+            margin-bottom: 18px;
+        }
+        .result-card .btn {
+            min-width: 100px;
+        }
+
+        /* ----- LEADERBOARD ----- */
+        .leaderboard-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(6px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .leaderboard-overlay.show {
+            display: flex;
+        }
+        .leaderboard-card {
+            background: rgba(30, 27, 75, 0.95);
+            border-radius: 40px;
+            padding: 25px 30px;
+            max-width: 450px;
+            width: 90%;
+            max-height: 70vh;
+            overflow-y: auto;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: #fff;
+        }
+        .leaderboard-card h2 {
+            text-align: center;
+            margin-bottom: 14px;
+            background: linear-gradient(135deg, #f7971e, #ffd200);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .leaderboard-item .name {
+            font-weight: 500;
+        }
+        .leaderboard-item .score {
+            font-weight: 700;
+            color: #ffd700;
+        }
+        .close-btn {
+            background: rgba(255, 255, 255, 0.1);
             border: none;
-            padding: 12px 18px;
-            border-radius: 28px;
-            font-weight: bold;
-            color: white;
+            color: #fff;
+            padding: 6px 18px;
+            border-radius: 30px;
             cursor: pointer;
+            margin-top: 14px;
+            font-weight: 600;
             transition: 0.2s;
-            font-size: 0.9rem;
         }
-        button:active {
-            transform: scale(0.96);
-        }
-        .login-status {
-            font-size: 0.75rem;
-            color: #ffaa44;
-            text-align: center;
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
         }
 
-        .footer {
-            text-align: center;
-            padding: 12px;
-            border-top: 1px solid rgba(0,255,255,0.2);
-            font-size: 0.7rem;
-            color: #888;
+        /* ----- RESPONSIVE ----- */
+        @media (max-width: 550px) {
+            .game-container {
+                padding: 16px 12px;
+                border-radius: 32px;
+            }
+            .title {
+                font-size: 20px;
+            }
+            .settings-btn {
+                font-size: 22px;
+            }
+            .board {
+                padding: 6px;
+                gap: 6px;
+            }
+            .cell {
+                font-size: 32px;
+                border-radius: 14px;
+            }
+            .btn {
+                font-size: 12px;
+                padding: 6px 14px;
+            }
+            .turn-indicator {
+                font-size: 14px;
+                padding: 2px 10px;
+            }
+            .turn-icon {
+                width: 26px;
+                height: 26px;
+                font-size: 16px;
+                line-height: 26px;
+            }
+            .score-board {
+                font-size: 12px;
+                padding: 2px 12px;
+                gap: 10px;
+            }
+            .emoji-btn {
+                font-size: 20px;
+            }
+            .settings-card {
+                padding: 20px 16px;
+            }
+            .settings-group label {
+                font-size: 12px;
+            }
+            .settings-group select,
+            .settings-group input[type="number"] {
+                width: 70px;
+                font-size: 12px;
+            }
+            .result-card {
+                padding: 20px 16px;
+            }
+            .result-card .msg {
+                font-size: 22px;
+            }
+            .leaderboard-card {
+                padding: 20px 16px;
+            }
+            .online-card {
+                padding: 20px 16px;
+            }
+            .online-card input {
+                width: 120px;
+                font-size: 16px;
+            }
         }
-
-        /* Animasi pulse */
-        @keyframes pulse {
-            0% { text-shadow: 0 0 2px #0ff; }
-            100% { text-shadow: 0 0 8px #0ff; }
-        }
-        .glow-text {
-            animation: pulse 1.5s infinite alternate;
-        }
-
-        /* Sembunyikan menu mod awal */
-        .menu-container {
-            display: none;
-        }
-
-        /* Jika login sukses, tampilkan menu, sembunyikan login */
-        .login-container {
-            display: block;
-        }
-        body.logged-in .login-container {
-            display: none;
-        }
-        body.logged-in .menu-container {
-            display: block;
+        @media (max-width: 420px) {
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 8px;
+            }
+            .header-actions {
+                justify-content: center;
+            }
+            .mode-toggle {
+                justify-content: center;
+            }
+            .status-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .turn-indicator,
+            .score-board {
+                justify-content: center;
+            }
+            .timer-display {
+                text-align: center;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="mod-panel">
-        <div class="panel-header">
-            <div class="version-badge">v3.0</div>
-            <h1>MOD MENU</h1>
-            <div class="developer">by <span>Putzzdev</span> | Exclusive</div>
-        </div>
 
-        <!-- Container Login -->
-        <div class="login-container">
-            <div class="panel-content">
-                <div class="feature-card">
-                    <div class="card-title">
-                        <i>🔐</i> <span>AUTHENTICATION</span>
-                    </div>
-                    <div class="login-area">
-                        <div class="input-group">
-                            <input type="text" id="username" placeholder="Username" value="Putzzdev">
-                            <input type="password" id="password" placeholder="Password" value="modmenu">
-                        </div>
-                        <button id="loginBtn">UNLOCK MOD MENU</button>
-                        <div id="loginStatus" class="login-status">🔒 Masukkan kredensial untuk mengakses menu</div>
-                    </div>
+    <div class="game-container" id="app">
+        <!-- HEADER -->
+        <div class="header">
+            <span class="title">✦ Tic-Tac-Toe</span>
+            <div class="header-actions">
+                <div class="mode-toggle">
+                    <button class="mode-btn active" data-mode="pvp" id="modePvp">👥 PvP</button>
+                    <button class="mode-btn" data-mode="pve" id="modePve">🤖 PvE</button>
+                    <button class="mode-btn online" data-mode="online" id="modeOnline">🌐 Online</button>
                 </div>
+                <button class="settings-btn" id="settingsToggle" title="Pengaturan">⚙️</button>
             </div>
         </div>
 
-        <!-- Container Menu Mod (awal tersembunyi) -->
-        <div class="menu-container">
-            <div class="panel-content">
-                <!-- Fitur Aimbot 30% -->
-                <div class="feature-card">
-                    <div class="card-title">
-                        <i>🎯</i> <span>AIMBOT 30%</span>
-                    </div>
-                    <div class="toggle-row">
-                        <span style="color:#ccc;">Status</span>
-                        <div id="aimbotToggle" class="toggle-switch"></div>
-                    </div>
-                    <div id="aimbotStatus" class="status-text">⚡ Nonaktif</div>
-                </div>
-
-                <!-- Fitur Aim Body (nyala/mati) -->
-                <div class="feature-card">
-                    <div class="card-title">
-                        <i>💪</i> <span>AIM BODY</span>
-                    </div>
-                    <div class="toggle-row">
-                        <span style="color:#ccc;">Status</span>
-                        <div id="bodyToggle" class="toggle-switch"></div>
-                    </div>
-                    <div id="bodyStatus" class="status-text">⚡ Nonaktif</div>
-                </div>
-
-                <!-- Fitur Aim Leher (neck) -->
-                <div class="feature-card">
-                    <div class="card-title">
-                        <i>🦴</i> <span>AIM LEHER</span>
-                    </div>
-                    <div class="toggle-row">
-                        <span style="color:#ccc;">Status</span>
-                        <div id="neckToggle" class="toggle-switch"></div>
-                    </div>
-                    <div id="neckStatus" class="status-text">⚡ Nonaktif</div>
-                </div>
+        <!-- STATUS BAR -->
+        <div class="status-bar">
+            <div class="turn-indicator" id="turnIndicator">
+                <span>Giliran</span>
+                <span class="turn-icon x" id="turnIcon">X</span>
             </div>
+            <div class="score-board">
+                <div class="score-item"><span style="color:#ff6b6b;" id="symbolXDisplay">X</span> <span class="num" id="scoreX">0</span></div>
+                <div class="score-item"><span style="color:#4ecdc4;" id="symbolODisplay">O</span> <span class="num" id="scoreO">0</span></div>
+                <div class="score-item"><span style="color:#a29bfe;">═</span> <span class="num" id="scoreDraw">0</span></div>
+                <div class="score-item" id="bestOfDisplay" style="display:none;"><span>🏆</span> <span class="num" id="bestOfScore">0/0</span></div>
+            </div>
+            <div class="timer-display" id="timerDisplay">--</div>
+            <div class="online-status" id="onlineStatus" style="display:none;">🔗 Online</div>
         </div>
 
-        <div class="footer">
-            © 2026 Putzzdev | Advanced Overlay Panel
+        <!-- BOARD -->
+        <div class="board-wrapper">
+            <div class="board" id="board"></div>
+        </div>
+
+        <!-- EMOJI -->
+        <div class="emoji-bar">
+            <button class="emoji-btn" data-emoji="😊">😊</button>
+            <button class="emoji-btn" data-emoji="😂">😂</button>
+            <button class="emoji-btn" data-emoji="😍">😍</button>
+            <button class="emoji-btn" data-emoji="😡">😡</button>
+            <button class="emoji-btn" data-emoji="🤔">🤔</button>
+            <button class="emoji-btn" data-emoji="🎉">🎉</button>
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="actions">
+            <button class="btn btn-primary" id="btnReset">↺ Mulai Ulang</button>
+            <button class="btn btn-secondary" id="btnResetScore">⟳ Reset Skor</button>
+            <button class="btn btn-secondary" id="btnFullscreen">⛶ Layar Penuh</button>
+            <button class="btn btn-secondary" id="btnLeaderboard">🏅 Peringkat</button>
+            <button class="btn btn-online" id="btnOnlineRoom" style="display:none;">🔗 Keluar Ruangan</button>
+        </div>
+        <div class="status-msg" id="statusMessage">😊 Klik emoji untuk ekspresi</div>
+    </div>
+
+    <!-- MODAL PENGATURAN -->
+    <div class="settings-overlay" id="settingsOverlay">
+        <div class="settings-card">
+            <h2>⚙️ Pengaturan</h2>
+            <div class="settings-group">
+                <label>🎨 Tema
+                    <select id="themeSelect">
+                        <option value="dark">Gelap</option>
+                        <option value="light">Terang</option>
+                    </select>
+                </label>
+                <label>🔣 Simbol X
+                    <select id="symbolX">
+                        <option value="X">X</option>
+                        <option value="⚔️">⚔️</option>
+                        <option value="⭐">⭐</option>
+                        <option value="🔥">🔥</option>
+                    </select>
+                </label>
+                <label>🔣 Simbol O
+                    <select id="symbolO">
+                        <option value="O">O</option>
+                        <option value="🛡️">🛡️</option>
+                        <option value="🌙">🌙</option>
+                        <option value="💎">💎</option>
+                    </select>
+                </label>
+                <label>📏 Ukuran
+                    <select id="sizeSelect">
+                        <option value="3">3x3</option>
+                        <option value="4">4x4</option>
+                        <option value="5">5x5</option>
+                    </select>
+                </label>
+                <label>🤖 AI
+                    <select id="difficultySelect">
+                        <option value="easy">Mudah</option>
+                        <option value="medium">Sedang</option>
+                        <option value="hard" selected>Sulit</option>
+                    </select>
+                </label>
+                <label>⏱️ Timer (dt)
+                    <input type="number" id="timerInput" value="0" min="0" max="60" step="5" style="width:60px;" />
+                </label>
+                <label>🏆 Best of
+                    <select id="bestOfSelect">
+                        <option value="1">1</option>
+                        <option value="3">3</option>
+                        <option value="5">5</option>
+                    </select>
+                </label>
+            </div>
+            <button class="close-settings-btn" id="closeSettings">Tutup</button>
+        </div>
+    </div>
+
+    <!-- MODAL ONLINE -->
+    <div class="online-overlay" id="onlineOverlay">
+        <div class="online-card">
+            <h2>🌐 Multiplayer Online</h2>
+            <p>Masukkan kode ruangan atau buat ruangan baru</p>
+            <input type="text" id="roomCodeInput" maxlength="6" placeholder="KODE" value="" />
+            <div class="btn-group">
+                <button class="btn btn-online" id="btnCreateRoom">Buat Ruangan</button>
+                <button class="btn btn-secondary" id="btnJoinRoom">Gabung</button>
+            </div>
+            <div class="error-msg" id="onlineError"></div>
+            <button class="close-settings-btn" id="closeOnline" style="margin-top:16px;">Batal</button>
+        </div>
+    </div>
+
+    <!-- MODAL HASIL -->
+    <div class="result-overlay" id="resultOverlay">
+        <div class="result-card">
+            <span class="emoji" id="resultEmoji">🏆</span>
+            <div class="msg" id="resultMsg">X Menang!</div>
+            <div class="sub" id="resultSub">Permainan selesai</div>
+            <button class="btn btn-primary" id="resultBtn">Lanjut</button>
+        </div>
+    </div>
+
+    <!-- MODAL LEADERBOARD -->
+    <div class="leaderboard-overlay" id="leaderboardOverlay">
+        <div class="leaderboard-card">
+            <h2>🏅 Papan Peringkat</h2>
+            <div id="leaderboardList"></div>
+            <button class="close-btn" id="closeLeaderboard">Tutup</button>
         </div>
     </div>
 
     <script>
-        // ========== LOGIN HANDLER ==========
-        const loginBtn = document.getElementById('loginBtn');
-        const usernameInput = document.getElementById('username');
-        const passwordInput = document.getElementById('password');
-        const loginStatusDiv = document.getElementById('loginStatus');
+        // ============================================================
+        //  KONFIGURASI FIREBASE (DIISI DENGAN KREDENSIAL ANDA)
+        // ============================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDdrCZywWIXk7rhPoVPYM1LMRwRwmzVUQo",
+            authDomain: "game-toctac.firebaseapp.com",
+            projectId: "game-toctac",
+            storageBucket: "game-toctac.firebasestorage.app",
+            messagingSenderId: "109624338492",
+            appId: "1:109624338492:web:bd48d43ff007684b2e3b39"
+        };
 
-        loginBtn.addEventListener('click', () => {
-            const user = usernameInput.value.trim();
-            const pass = passwordInput.value.trim();
-            if (user !== '' && pass !== '') {
-                // Login sukses: tambahkan class logged-in ke body
-                document.body.classList.add('logged-in');
-                // Opsional: set status login berhasil di console
-                console.log('Login sukses, menu mod muncul.');
+        // Inisialisasi Firebase
+        let firebaseApp = null;
+        let firebaseDb = null;
+        let firebaseInitialized = false;
+
+        try {
+            firebaseApp = firebase.initializeApp(firebaseConfig);
+            firebaseDb = firebase.database();
+            firebaseInitialized = true;
+            console.log("✅ Firebase initialized successfully");
+        } catch (e) {
+            console.warn("❌ Firebase init error:", e);
+        }
+
+        (function() {
+            'use strict';
+
+            // ========== DOM REFS ==========
+            const boardEl = document.getElementById('board');
+            const turnIcon = document.getElementById('turnIcon');
+            const turnIndicator = document.getElementById('turnIndicator');
+            const scoreX = document.getElementById('scoreX');
+            const scoreO = document.getElementById('scoreO');
+            const scoreDraw = document.getElementById('scoreDraw');
+            const bestOfScore = document.getElementById('bestOfScore');
+            const bestOfDisplay = document.getElementById('bestOfDisplay');
+            const timerDisplay = document.getElementById('timerDisplay');
+            const statusMsg = document.getElementById('statusMessage');
+            const onlineStatus = document.getElementById('onlineStatus');
+            const btnOnlineRoom = document.getElementById('btnOnlineRoom');
+
+            const btnReset = document.getElementById('btnReset');
+            const btnResetScore = document.getElementById('btnResetScore');
+            const btnFullscreen = document.getElementById('btnFullscreen');
+            const btnLeaderboard = document.getElementById('btnLeaderboard');
+            const modePvp = document.getElementById('modePvp');
+            const modePve = document.getElementById('modePve');
+            const modeOnline = document.getElementById('modeOnline');
+            const resultOverlay = document.getElementById('resultOverlay');
+            const resultEmoji = document.getElementById('resultEmoji');
+            const resultMsg = document.getElementById('resultMsg');
+            const resultSub = document.getElementById('resultSub');
+            const resultBtn = document.getElementById('resultBtn');
+            const leaderboardOverlay = document.getElementById('leaderboardOverlay');
+            const leaderboardList = document.getElementById('leaderboardList');
+            const closeLeaderboard = document.getElementById('closeLeaderboard');
+
+            const settingsOverlay = document.getElementById('settingsOverlay');
+            const settingsToggle = document.getElementById('settingsToggle');
+            const closeSettings = document.getElementById('closeSettings');
+
+            const onlineOverlay = document.getElementById('onlineOverlay');
+            const roomCodeInput = document.getElementById('roomCodeInput');
+            const btnCreateRoom = document.getElementById('btnCreateRoom');
+            const btnJoinRoom = document.getElementById('btnJoinRoom');
+            const closeOnline = document.getElementById('closeOnline');
+            const onlineError = document.getElementById('onlineError');
+
+            const themeSelect = document.getElementById('themeSelect');
+            const symbolXSelect = document.getElementById('symbolX');
+            const symbolOSelect = document.getElementById('symbolO');
+            const sizeSelect = document.getElementById('sizeSelect');
+            const difficultySelect = document.getElementById('difficultySelect');
+            const timerInput = document.getElementById('timerInput');
+            const bestOfSelect = document.getElementById('bestOfSelect');
+            const symbolXDisplay = document.getElementById('symbolXDisplay');
+            const symbolODisplay = document.getElementById('symbolODisplay');
+
+            // ========== STATE ==========
+            let board = [];
+            let currentPlayer = 'X';
+            let gameActive = false;
+            let mode = 'pvp'; // 'pvp' | 'pve' | 'online'
+            let size = 3;
+            let winCells = null;
+            let scores = { X: 0, O: 0, draw: 0 };
+            let bestOf = 1;
+            let bestOfWins = { X: 0, O: 0 };
+            let bestOfTotal = 0;
+            let roundActive = true;
+            let timerSeconds = 0;
+            let timerInterval = null;
+            let timeLeft = 0;
+            let timerRunning = false;
+
+            let symbolX = 'X';
+            let symbolO = 'O';
+
+            // ========== STATE ONLINE ==========
+            let onlineRoom = null; // kode ruangan
+            let onlinePlayer = null; // 'X' atau 'O'
+            let onlineRef = null; // reference database
+            let onlineListener = null;
+            let onlineConnected = false;
+            let isHost = false; // yang buat ruangan
+
+            // ========== KONSTANTA ==========
+            const WIN_PATTERNS_CACHE = {};
+
+            function getWinPatterns(n) {
+                if (WIN_PATTERNS_CACHE[n]) return WIN_PATTERNS_CACHE[n];
+                const patterns = [];
+                for (let r = 0; r < n; r++) {
+                    const row = [];
+                    for (let c = 0; c < n; c++) row.push(r * n + c);
+                    patterns.push(row);
+                }
+                for (let c = 0; c < n; c++) {
+                    const col = [];
+                    for (let r = 0; r < n; r++) col.push(r * n + c);
+                    patterns.push(col);
+                }
+                const diag1 = [];
+                for (let i = 0; i < n; i++) diag1.push(i * n + i);
+                patterns.push(diag1);
+                const diag2 = [];
+                for (let i = 0; i < n; i++) diag2.push(i * n + (n - 1 - i));
+                patterns.push(diag2);
+                WIN_PATTERNS_CACHE[n] = patterns;
+                return patterns;
+            }
+
+            // ========== FUNGSI UTAMA ==========
+            function initBoard() {
+                board = Array(size * size).fill(null);
+                gameActive = true;
+                winCells = null;
+                roundActive = true;
+                clearTimer();
+                renderBoard();
+                updateTurnIndicator();
+                updateScores();
+                if (mode === 'pve' && currentPlayer === 'O') {
+                    setTimeout(() => aiMove(), 400);
+                }
+                statusMsg.textContent = '😊 Klik emoji untuk ekspresi';
+            }
+
+            function renderBoard() {
+                boardEl.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+                boardEl.innerHTML = '';
+                for (let i = 0; i < board.length; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    if (board[i]) {
+                        cell.classList.add('taken');
+                        const sym = board[i] === 'X' ? symbolX : symbolO;
+                        cell.textContent = sym;
+                        cell.classList.add(board[i] === 'X' ? 'x-move' : 'o-move');
+                    }
+                    if (winCells && winCells.includes(i)) {
+                        cell.classList.add('win-highlight');
+                    }
+                    if (winCells === null && !gameActive && board.every(v => v !== null)) {
+                        cell.classList.add('draw-highlight');
+                    }
+                    cell.dataset.index = i;
+                    cell.addEventListener('click', () => handleCellClick(i));
+                    boardEl.appendChild(cell);
+                }
+                symbolXDisplay.textContent = symbolX;
+                symbolODisplay.textContent = symbolO;
+            }
+
+            function updateTurnIndicator() {
+                if (!gameActive) {
+                    if (winCells) {
+                        const winner = board[winCells[0]];
+                        const sym = winner === 'X' ? symbolX : symbolO;
+                        turnIcon.textContent = sym;
+                        turnIcon.className = `turn-icon ${winner === 'X' ? 'x' : 'o'}`;
+                        turnIndicator.innerHTML =
+                            `<span>🏆</span> <span class="turn-icon ${winner === 'X' ? 'x' : 'o'}">${sym}</span> <span>Menang!</span>`;
+                    } else if (board.every(v => v !== null)) {
+                        turnIndicator.innerHTML = `<span>🤝</span> <span>Seri!</span>`;
+                    }
+                    return;
+                }
+                const sym = currentPlayer === 'X' ? symbolX : symbolO;
+                turnIcon.textContent = sym;
+                turnIcon.className = `turn-icon ${currentPlayer === 'X' ? 'x' : 'o'}`;
+                turnIndicator.innerHTML =
+                    `<span>Giliran</span> <span class="turn-icon ${currentPlayer === 'X' ? 'x' : 'o'}">${sym}</span>`;
+            }
+
+            function updateScores() {
+                scoreX.textContent = scores.X;
+                scoreO.textContent = scores.O;
+                scoreDraw.textContent = scores.draw;
+                if (bestOf > 1) {
+                    bestOfDisplay.style.display = 'flex';
+                    bestOfScore.textContent = `${bestOfWins.X+bestOfWins.O}/${bestOf}`;
+                } else {
+                    bestOfDisplay.style.display = 'none';
+                }
+            }
+
+            // ========== CEK PEMENANG ==========
+            function checkWinnerOnBoard(boardArr) {
+                const patterns = getWinPatterns(size);
+                for (const pattern of patterns) {
+                    const first = boardArr[pattern[0]];
+                    if (first && pattern.every(idx => boardArr[idx] === first)) {
+                        return { winner: first, cells: pattern };
+                    }
+                }
+                return null;
+            }
+
+            function isDrawOnBoard(boardArr) {
+                return boardArr.every(v => v !== null);
+            }
+
+            // ========== HANDLE KLIK ==========
+            function handleCellClick(index) {
+                if (!gameActive || !roundActive) return;
+                if (board[index] !== null) return;
+
+                // Online mode: cek giliran dan role
+                if (mode === 'online') {
+                    if (!onlineConnected || onlinePlayer !== currentPlayer) return;
+                    // kirim langkah ke Firebase
+                    if (onlineRef) {
+                        onlineRef.child('board').child(index).set(currentPlayer);
+                        // toggle giliran akan diatur oleh listener
+                    }
+                    return;
+                }
+
+                if (mode === 'pve' && currentPlayer === 'O') return;
+                if (timerSeconds > 0 && !timerRunning) {
+                    startTimer();
+                }
+                makeMove(index, currentPlayer);
+            }
+
+            function makeMove(index, player) {
+                if (board[index] !== null || !gameActive || !roundActive) return false;
+                if (player !== currentPlayer) return false;
+
+                board[index] = player;
+                const cells = boardEl.children;
+                if (cells[index]) {
+                    cells[index].classList.add('pop');
+                    setTimeout(() => cells[index].classList.remove('pop'), 300);
+                }
+                playSound('click');
+
+                const win = checkWinnerOnBoard(board);
+                if (win) {
+                    gameActive = false;
+                    roundActive = false;
+                    winCells = win.cells;
+                    scores[win.winner] = (scores[win.winner] || 0) + 1;
+                    if (bestOf > 1) {
+                        bestOfWins[win.winner] = (bestOfWins[win.winner] || 0) + 1;
+                        bestOfTotal++;
+                    }
+                    updateScores();
+                    renderBoard();
+                    playSound('win');
+                    if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                    showResult(win.winner);
+                    clearTimer();
+                    saveStats();
+                    // jika online, update status di firebase
+                    if (mode === 'online' && onlineRef) {
+                        onlineRef.child('gameActive').set(false);
+                        onlineRef.child('winner').set(win.winner);
+                        onlineRef.child('winCells').set(win.cells);
+                    }
+                    return true;
+                }
+
+                if (isDrawOnBoard(board)) {
+                    gameActive = false;
+                    roundActive = false;
+                    winCells = null;
+                    scores.draw = (scores.draw || 0) + 1;
+                    if (bestOf > 1) {
+                        bestOfTotal++;
+                    }
+                    updateScores();
+                    renderBoard();
+                    playSound('draw');
+                    if (navigator.vibrate) navigator.vibrate(200);
+                    showResult(null);
+                    clearTimer();
+                    saveStats();
+                    if (mode === 'online' && onlineRef) {
+                        onlineRef.child('gameActive').set(false);
+                        onlineRef.child('winner').set('draw');
+                        onlineRef.child('winCells').set([]);
+                    }
+                    return true;
+                }
+
+                currentPlayer = (currentPlayer === 'X' ? 'O' : 'X');
+                renderBoard();
+                updateTurnIndicator();
+
+                if (mode === 'online' && onlineRef) {
+                    onlineRef.child('currentPlayer').set(currentPlayer);
+                }
+
+                if (mode === 'pve' && gameActive && currentPlayer === 'O' && roundActive) {
+                    if (timerSeconds > 0 && !timerRunning) startTimer();
+                    setTimeout(() => aiMove(), 300);
+                }
+                return true;
+            }
+
+            // ========== AI (sama seperti sebelumnya) ==========
+            function aiMove() {
+                if (!gameActive || !roundActive) return;
+                if (mode !== 'pve') return;
+                if (currentPlayer !== 'O') return;
+
+                const difficulty = difficultySelect.value;
+                let moveIndex = -1;
+
+                if (difficulty === 'easy') {
+                    moveIndex = getRandomMove();
+                } else if (difficulty === 'medium') {
+                    if (Math.random() < 0.5) {
+                        moveIndex = getRandomMove();
+                    } else {
+                        moveIndex = getMinimaxMove(3);
+                    }
+                } else {
+                    moveIndex = getMinimaxMove(Infinity);
+                }
+
+                if (moveIndex !== -1 && board[moveIndex] === null) {
+                    makeMove(moveIndex, 'O');
+                } else {
+                    const fallback = getRandomMove();
+                    if (fallback !== -1) makeMove(fallback, 'O');
+                }
+            }
+
+            function getRandomMove() {
+                const available = board.reduce((acc, val, idx) => val === null ? [...acc, idx] : acc, []);
+                if (available.length === 0) return -1;
+                return available[Math.floor(Math.random() * available.length)];
+            }
+
+            function getMinimaxMove(maxDepth) {
+                const player = 'O';
+                const best = minimax(board, player, 0, maxDepth, -Infinity, Infinity);
+                return best.index !== undefined ? best.index : -1;
+            }
+
+            function minimax(newBoard, player, depth, maxDepth, alpha, beta) {
+                const available = newBoard.reduce((acc, val, idx) => val === null ? [...acc, idx] : acc, []);
+                const win = checkWinnerOnBoard(newBoard);
+                if (win) {
+                    if (win.winner === 'X') return { score: -10 + depth };
+                    if (win.winner === 'O') return { score: 10 - depth };
+                }
+                if (available.length === 0 || depth >= maxDepth) {
+                    return { score: evaluateBoard(newBoard, 'O') };
+                }
+
+                let bestMove = { index: available[0], score: player === 'O' ? -Infinity : Infinity };
+
+                for (const idx of available) {
+                    const boardCopy = [...newBoard];
+                    boardCopy[idx] = player;
+                    const result = minimax(boardCopy, player === 'X' ? 'O' : 'X', depth + 1, maxDepth, alpha, beta);
+                    const move = { index: idx, score: result.score };
+
+                    if (player === 'O') {
+                        if (move.score > bestMove.score) {
+                            bestMove = move;
+                        }
+                        alpha = Math.max(alpha, move.score);
+                    } else {
+                        if (move.score < bestMove.score) {
+                            bestMove = move;
+                        }
+                        beta = Math.min(beta, move.score);
+                    }
+                    if (beta <= alpha) break;
+                }
+                return bestMove;
+            }
+
+            function evaluateBoard(boardArr, player) {
+                const patterns = getWinPatterns(size);
+                let score = 0;
+                for (const pattern of patterns) {
+                    const vals = pattern.map(i => boardArr[i]);
+                    const countPlayer = vals.filter(v => v === player).length;
+                    const countEmpty = vals.filter(v => v === null).length;
+                    const countOpp = vals.filter(v => v !== null && v !== player).length;
+                    if (countOpp === 0) {
+                        score += countPlayer * 2 + countEmpty;
+                    }
+                }
+                return score;
+            }
+
+            // ========== TIMER ==========
+            function startTimer() {
+                if (timerSeconds <= 0) return;
+                if (timerRunning) return;
+                timeLeft = timerSeconds;
+                timerRunning = true;
+                updateTimerDisplay();
+                timerInterval = setInterval(() => {
+                    timeLeft--;
+                    updateTimerDisplay();
+                    if (timeLeft <= 0) {
+                        clearTimer();
+                        if (gameActive && roundActive) {
+                            const loser = currentPlayer;
+                            const winner = loser === 'X' ? 'O' : 'X';
+                            gameActive = false;
+                            roundActive = false;
+                            scores[winner] = (scores[winner] || 0) + 1;
+                            if (bestOf > 1) {
+                                bestOfWins[winner] = (bestOfWins[winner] || 0) + 1;
+                                bestOfTotal++;
+                            }
+                            updateScores();
+                            renderBoard();
+                            playSound('win');
+                            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                            winCells = null;
+                            showResult(winner, true);
+                            saveStats();
+                            if (mode === 'online' && onlineRef) {
+                                onlineRef.child('gameActive').set(false);
+                                onlineRef.child('winner').set(winner);
+                                onlineRef.child('winCells').set([]);
+                            }
+                        }
+                    }
+                }, 1000);
+            }
+
+            function clearTimer() {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                }
+                timerRunning = false;
+                timeLeft = 0;
+                timerDisplay.textContent = '--';
+            }
+
+            function updateTimerDisplay() {
+                timerDisplay.textContent = timeLeft > 0 ? timeLeft : '0';
+            }
+
+            // ========== SOUND ==========
+            let audioCtx = null;
+
+            function playSound(type) {
+                try {
+                    if (!audioCtx) audioCtx = new(window.AudioContext || window.webkitAudioContext)();
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    if (type === 'click') {
+                        osc.frequency.value = 600;
+                        gain.gain.value = 0.1;
+                        osc.start();
+                        osc.stop(audioCtx.currentTime + 0.05);
+                    } else if (type === 'win') {
+                        osc.frequency.value = 800;
+                        gain.gain.value = 0.15;
+                        osc.start();
+                        osc.frequency.setValueAtTime(1200, audioCtx.currentTime + 0.1);
+                        osc.stop(audioCtx.currentTime + 0.3);
+                    } else if (type === 'draw') {
+                        osc.frequency.value = 400;
+                        gain.gain.value = 0.1;
+                        osc.start();
+                        osc.frequency.setValueAtTime(300, audioCtx.currentTime + 0.1);
+                        osc.stop(audioCtx.currentTime + 0.25);
+                    }
+                } catch (e) { /* silent */ }
+            }
+
+            // ========== SHOW RESULT ==========
+            function showResult(winner, timeout = false) {
+                let emoji, msg, sub;
+                if (winner) {
+                    const sym = winner === 'X' ? symbolX : symbolO;
+                    emoji = winner === 'X' ? '🔥' : '💎';
+                    msg = `${sym} Menang!`;
+                    sub = timeout ? 'Karena waktu habis!' : 'Permainan selesai!';
+                } else {
+                    emoji = '🤝';
+                    msg = 'Seri!';
+                    sub = 'Permainan berakhir imbang.';
+                }
+                resultEmoji.textContent = emoji;
+                resultMsg.textContent = msg;
+                resultSub.textContent = sub;
+                resultOverlay.classList.add('show');
+                if (bestOf > 1 && bestOfWins.X + bestOfWins.O < bestOf) {
+                    resultBtn.textContent = 'Lanjutkan Ronde';
+                } else {
+                    resultBtn.textContent = 'Main Lagi';
+                }
+            }
+
+            function closeResult() {
+                resultOverlay.classList.remove('show');
+                if (bestOf > 1 && bestOfWins.X + bestOfWins.O >= bestOf) {
+                    const winner = bestOfWins.X > bestOfWins.O ? 'X' : (bestOfWins.O > bestOfWins.X ? 'O' : null);
+                    if (winner) {
+                        alert(`🏆 Pemenang seri: ${winner === 'X' ? symbolX : symbolO} dengan skor ${bestOfWins[winner]} - ${bestOfWins[winner === 'X' ? 'O' : 'X']}`);
+                    } else {
+                        alert(`🤝 Seri! Skor ${bestOfWins.X} - ${bestOfWins.O}`);
+                    }
+                    bestOfWins = { X: 0, O: 0 };
+                    bestOfTotal = 0;
+                    updateScores();
+                    resetGame();
+                    return;
+                }
+                if (bestOf > 1 && roundActive === false) {
+                    resetGame();
+                }
+            }
+
+            // ========== RESET ==========
+            function resetGame() {
+                closeResult();
+                clearTimer();
+                board = Array(size * size).fill(null);
+                currentPlayer = 'X';
+                gameActive = true;
+                roundActive = true;
+                winCells = null;
+                renderBoard();
+                updateTurnIndicator();
+                if (mode === 'pve' && currentPlayer === 'O') {
+                    setTimeout(() => aiMove(), 400);
+                }
+                // jika online, reset di firebase
+                if (mode === 'online' && onlineRef && onlineConnected) {
+                    onlineRef.child('board').set(board);
+                    onlineRef.child('currentPlayer').set('X');
+                    onlineRef.child('gameActive').set(true);
+                    onlineRef.child('winner').set(null);
+                    onlineRef.child('winCells').set([]);
+                }
+            }
+
+            function resetScores() {
+                scores = { X: 0, O: 0, draw: 0 };
+                bestOfWins = { X: 0, O: 0 };
+                bestOfTotal = 0;
+                updateScores();
+                resetGame();
+                saveStats();
+            }
+
+            // ========== SIMPAN STATISTIK ==========
+            function saveStats() {
+                const stats = {
+                    scores,
+                    bestOfWins,
+                    bestOfTotal,
+                    totalGames: scores.X + scores.O + scores.draw
+                };
+                try {
+                    localStorage.setItem('tictac_stats', JSON.stringify(stats));
+                } catch (e) {}
+            }
+
+            function loadStats() {
+                try {
+                    const data = localStorage.getItem('tictac_stats');
+                    if (data) {
+                        const parsed = JSON.parse(data);
+                        scores = parsed.scores || { X: 0, O: 0, draw: 0 };
+                        bestOfWins = parsed.bestOfWins || { X: 0, O: 0 };
+                        bestOfTotal = parsed.bestOfTotal || 0;
+                        updateScores();
+                    }
+                } catch (e) {}
+            }
+
+            // ========== LEADERBOARD ==========
+            function showLeaderboard() {
+                const list = [];
+                let ownStats = { name: 'Pemain', scores };
+                list.push(ownStats);
+                leaderboardList.innerHTML = '';
+                list.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'leaderboard-item';
+                    div.innerHTML =
+                        `<span class="name">${item.name}</span><span class="score">X:${item.scores.X} O:${item.scores.O} Draw:${item.scores.draw}</span>`;
+                    leaderboardList.appendChild(div);
+                });
+                leaderboardOverlay.classList.add('show');
+            }
+
+            function closeLeaderboardFn() {
+                leaderboardOverlay.classList.remove('show');
+            }
+
+            // ========== EMOJI ==========
+            function setEmoji(emoji) {
+                statusMsg.textContent = `${emoji}  ${emoji}  ${emoji}`;
+                clearTimeout(window.emojiTimeout);
+                window.emojiTimeout = setTimeout(() => {
+                    statusMsg.textContent = '😊 Klik emoji untuk ekspresi';
+                }, 3000);
+                if (navigator.vibrate) navigator.vibrate(30);
+            }
+
+            // ========== FULLSCREEN ==========
+            function toggleFullscreen() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(() => {});
+                } else {
+                    if (document.exitFullscreen) document.exitFullscreen();
+                }
+            }
+
+            // ========== SETTINGS ==========
+            function applySettings() {
+                const theme = themeSelect.value;
+                document.body.classList.toggle('light', theme === 'light');
+                symbolX = symbolXSelect.value;
+                symbolO = symbolOSelect.value;
+                const newSize = parseInt(sizeSelect.value, 10);
+                const newBestOf = parseInt(bestOfSelect.value, 10);
+                const newTimer = parseInt(timerInput.value, 10) || 0;
+
+                if (newSize !== size) {
+                    size = newSize;
+                    resetGame();
+                } else {
+                    renderBoard();
+                    updateTurnIndicator();
+                }
+                bestOf = newBestOf;
+                timerSeconds = newTimer;
+                if (timerSeconds > 0) {
+                    timerDisplay.textContent = timerSeconds;
+                } else {
+                    timerDisplay.textContent = '--';
+                }
+                updateScores();
+            }
+
+            // ========== FUNGSI ONLINE ==========
+            function generateRoomCode() {
+                return Math.floor(1000 + Math.random() * 9000).toString();
+            }
+
+            function setModeOnline() {
+                if (!firebaseInitialized) {
+                    alert('Firebase gagal diinisialisasi. Periksa konfigurasi dan koneksi internet.');
+                    modePvp.click();
+                    return;
+                }
+                mode = 'online';
+                // update tombol
+                modePvp.classList.remove('active');
+                modePve.classList.remove('active');
+                modeOnline.classList.add('active');
+                // sembunyikan skor best of? online tidak pakai best of
+                bestOfDisplay.style.display = 'none';
+                // tampilkan tombol keluar
+                btnOnlineRoom.style.display = 'inline-block';
+                onlineStatus.style.display = 'inline-block';
+                // tampilkan modal online
+                onlineOverlay.classList.add('show');
+                roomCodeInput.value = '';
+                onlineError.textContent = '';
+                // reset game lokal
+                resetGame();
+            }
+
+            function exitOnlineRoom() {
+                if (onlineRef) {
+                    // hapus listener
+                    if (onlineListener) {
+                        onlineRef.off('value', onlineListener);
+                        onlineListener = null;
+                    }
+                    // hapus data ruangan jika host
+                    if (isHost && onlineRoom) {
+                        onlineRef.remove(); // hapus seluruh node
+                    }
+                    onlineRef = null;
+                }
+                onlineRoom = null;
+                onlinePlayer = null;
+                onlineConnected = false;
+                isHost = false;
+                onlineStatus.style.display = 'none';
+                btnOnlineRoom.style.display = 'none';
+                // kembali ke mode pvp
+                modePvp.click();
+            }
+
+            function joinOrCreateRoom(isCreate) {
+                const code = roomCodeInput.value.trim().toUpperCase();
+                if (!code) {
+                    onlineError.textContent = 'Masukkan kode ruangan!';
+                    return;
+                }
+                if (code.length < 4) {
+                    onlineError.textContent = 'Kode minimal 4 karakter';
+                    return;
+                }
+
+                onlineError.textContent = 'Menghubungkan...';
+                const roomRef = firebaseDb.ref('rooms/' + code);
+
+                if (isCreate) {
+                    // Buat ruangan
+                    roomRef.once('value', (snap) => {
+                        if (snap.exists()) {
+                            onlineError.textContent = 'Ruangan sudah ada, coba kode lain.';
+                            return;
+                        }
+                        // Inisialisasi data
+                        const initData = {
+                            board: Array(size * size).fill(null),
+                            currentPlayer: 'X',
+                            gameActive: true,
+                            winner: null,
+                            winCells: [],
+                            players: {
+                                X: null,
+                                O: null
+                            }
+                        };
+                        roomRef.set(initData, (err) => {
+                            if (err) {
+                                onlineError.textContent = 'Gagal buat ruangan: ' + err.message;
+                                return;
+                            }
+                            onlineError.textContent = 'Ruangan dibuat! Menunggu pemain lain...';
+                            isHost = true;
+                            onlineRoom = code;
+                            onlinePlayer = 'X';
+                            onlineRef = roomRef;
+                            // pasang listener
+                            setupOnlineListener(roomRef);
+                            // update status
+                            roomRef.child('players/X').set('connected');
+                            onlineStatus.textContent = '🔗 Host: ' + code;
+                            onlineOverlay.classList.remove('show');
+                            // reset board
+                            board = Array(size * size).fill(null);
+                            currentPlayer = 'X';
+                            gameActive = true;
+                            roundActive = true;
+                            winCells = null;
+                            renderBoard();
+                            updateTurnIndicator();
+                            updateScores();
+                        });
+                    });
+                } else {
+                    // Gabung
+                    roomRef.once('value', (snap) => {
+                        if (!snap.exists()) {
+                            onlineError.textContent = 'Ruangan tidak ditemukan.';
+                            return;
+                        }
+                        const data = snap.val();
+                        // cek apakah ada slot O
+                        if (data.players && data.players.O !== null && data.players.O !== 'disconnected') {
+                            onlineError.textContent = 'Ruangan penuh!';
+                            return;
+                        }
+                        onlineError.textContent = 'Bergabung...';
+                        isHost = false;
+                        onlineRoom = code;
+                        onlinePlayer = 'O';
+                        onlineRef = roomRef;
+                        // update player O
+                        roomRef.child('players/O').set('connected');
+                        // ambil state dari firebase
+                        if (data.board) board = data.board;
+                        if (data.currentPlayer) currentPlayer = data.currentPlayer;
+                        if (data.gameActive !== undefined) gameActive = data.gameActive;
+                        if (data.winCells) winCells = data.winCells;
+                        // render
+                        renderBoard();
+                        updateTurnIndicator();
+                        updateScores();
+                        onlineStatus.textContent = '🔗 Player: ' + code;
+                        onlineOverlay.classList.remove('show');
+                        // pasang listener
+                        setupOnlineListener(roomRef);
+                    }, (err) => {
+                        onlineError.textContent = 'Gagal gabung: ' + err.message;
+                    });
+                }
+            }
+
+            function setupOnlineListener(roomRef) {
+                if (onlineListener) {
+                    roomRef.off('value', onlineListener);
+                }
+                onlineListener = roomRef.on('value', (snap) => {
+                    const data = snap.val();
+                    if (!data) {
+                        // ruangan dihapus
+                        alert('Ruangan telah ditutup oleh host.');
+                        exitOnlineRoom();
+                        return;
+                    }
+                    // sinkronisasi board
+                    if (data.board) {
+                        board = data.board;
+                        renderBoard();
+                    }
+                    if (data.currentPlayer) {
+                        currentPlayer = data.currentPlayer;
+                        updateTurnIndicator();
+                    }
+                    if (data.gameActive !== undefined) {
+                        gameActive = data.gameActive;
+                    }
+                    if (data.winCells) {
+                        winCells = data.winCells;
+                        renderBoard();
+                    }
+                    // cek winner
+                    if (data.winner) {
+                        if (data.winner !== 'draw' && data.winner !== null) {
+                            // show result? tapi sudah ditampilkan oleh yang membuat langkah
+                            // jika kita join di tengah, kita perlu update UI
+                            // tapi skor tidak sync dari firebase
+                        }
+                    }
+                    // cek pemain lain putus
+                    if (data.players) {
+                        if (onlinePlayer === 'X' && data.players.O === 'disconnected') {
+                            alert('Pemain O putus koneksi. Permainan berakhir.');
+                            exitOnlineRoom();
+                            return;
+                        }
+                        if (onlinePlayer === 'O' && data.players.X === 'disconnected') {
+                            alert('Pemain X putus koneksi. Permainan berakhir.');
+                            exitOnlineRoom();
+                            return;
+                        }
+                    }
+                }, (err) => {
+                    console.warn('Firebase listener error:', err);
+                });
+
+                // deteksi disconnect
+                roomRef.child('players/' + onlinePlayer).onDisconnect().set('disconnected');
+            }
+
+            // ========== EVENT LISTENERS ==========
+            btnReset.addEventListener('click', resetGame);
+            btnResetScore.addEventListener('click', resetScores);
+            btnFullscreen.addEventListener('click', toggleFullscreen);
+            btnLeaderboard.addEventListener('click', showLeaderboard);
+            closeLeaderboard.addEventListener('click', closeLeaderboardFn);
+            leaderboardOverlay.addEventListener('click', (e) => {
+                if (e.target === leaderboardOverlay) closeLeaderboardFn();
+            });
+
+            modePvp.addEventListener('click', () => {
+                if (mode === 'online') exitOnlineRoom();
+                mode = 'pvp';
+                modePvp.classList.add('active');
+                modePve.classList.remove('active');
+                modeOnline.classList.remove('active');
+                btnOnlineRoom.style.display = 'none';
+                onlineStatus.style.display = 'none';
+                resetGame();
+                applySettings();
+            });
+            modePve.addEventListener('click', () => {
+                if (mode === 'online') exitOnlineRoom();
+                mode = 'pve';
+                modePve.classList.add('active');
+                modePvp.classList.remove('active');
+                modeOnline.classList.remove('active');
+                btnOnlineRoom.style.display = 'none';
+                onlineStatus.style.display = 'none';
+                resetGame();
+                applySettings();
+            });
+            modeOnline.addEventListener('click', () => {
+                if (mode === 'online') {
+                    // jika sudah online, tampilkan modal lagi?
+                    onlineOverlay.classList.add('show');
+                    return;
+                }
+                setModeOnline();
+            });
+
+            // Settings modal
+            settingsToggle.addEventListener('click', () => {
+                settingsOverlay.classList.toggle('show');
+            });
+            closeSettings.addEventListener('click', () => {
+                settingsOverlay.classList.remove('show');
+            });
+            settingsOverlay.addEventListener('click', (e) => {
+                if (e.target === settingsOverlay) settingsOverlay.classList.remove('show');
+            });
+
+            // Online modal
+            closeOnline.addEventListener('click', () => {
+                onlineOverlay.classList.remove('show');
+                if (mode === 'online' && !onlineConnected) {
+                    // batal masuk online
+                    modePvp.click();
+                }
+            });
+            onlineOverlay.addEventListener('click', (e) => {
+                if (e.target === onlineOverlay) {
+                    onlineOverlay.classList.remove('show');
+                    if (mode === 'online' && !onlineConnected) {
+                        modePvp.click();
+                    }
+                }
+            });
+
+            btnCreateRoom.addEventListener('click', () => {
+                if (!firebaseInitialized) {
+                    onlineError.textContent = 'Firebase gagal diinisialisasi.';
+                    return;
+                }
+                // generate kode jika kosong
+                if (!roomCodeInput.value.trim()) {
+                    roomCodeInput.value = generateRoomCode();
+                }
+                joinOrCreateRoom(true);
+            });
+
+            btnJoinRoom.addEventListener('click', () => {
+                if (!firebaseInitialized) {
+                    onlineError.textContent = 'Firebase gagal diinisialisasi.';
+                    return;
+                }
+                joinOrCreateRoom(false);
+            });
+
+            btnOnlineRoom.addEventListener('click', () => {
+                if (confirm('Keluar dari ruangan online?')) {
+                    exitOnlineRoom();
+                    modePvp.click();
+                }
+            });
+
+            // Pengaturan langsung terapkan
+            [themeSelect, symbolXSelect, symbolOSelect, sizeSelect, bestOfSelect, timerInput].forEach(el => {
+                el.addEventListener('change', applySettings);
+            });
+            sizeSelect.addEventListener('change', () => {
+                size = parseInt(sizeSelect.value, 10);
+                resetGame();
+                applySettings();
+            });
+
+            resultBtn.addEventListener('click', () => {
+                closeResult();
+                if (gameActive === false && roundActive === false) {
+                    resetGame();
+                }
+            });
+
+            document.querySelectorAll('.emoji-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    setEmoji(btn.dataset.emoji);
+                });
+            });
+
+            // ========== INISIALISASI ==========
+            loadStats();
+            applySettings();
+            resetGame();
+            modePvp.classList.add('active');
+            modePve.classList.remove('active');
+            modeOnline.classList.remove('active');
+            if (bestOf > 1) {
+                bestOfDisplay.style.display = 'flex';
+            }
+
+            // jika firebase tidak siap, nonaktifkan tombol online
+            if (!firebaseInitialized) {
+                modeOnline.style.opacity = '0.5';
+                modeOnline.title = 'Firebase tidak dapat diinisialisasi';
+                modeOnline.style.cursor = 'not-allowed';
             } else {
-                loginStatusDiv.innerHTML = '❌ Username dan password tidak boleh kosong!';
-                loginStatusDiv.style.color = '#ff5555';
+                modeOnline.style.opacity = '1';
+                modeOnline.title = '';
+                modeOnline.style.cursor = 'pointer';
             }
-        });
 
-        // ========== AIMBOT 30% TOGGLE ==========
-        const aimbotToggle = document.getElementById('aimbotToggle');
-        const aimbotStatus = document.getElementById('aimbotStatus');
-        let aimbotActive = false;
+            // tutup result jika klik overlay
+            resultOverlay.addEventListener('click', (e) => {
+                if (e.target === resultOverlay) {
+                    // tidak langsung tutup
+                }
+            });
 
-        aimbotToggle.addEventListener('click', () => {
-            aimbotActive = !aimbotActive;
-            if (aimbotActive) {
-                aimbotToggle.classList.add('active');
-                aimbotStatus.innerHTML = '✅ ACTIVE | Aimbot 30% lock-on engaged';
-                aimbotStatus.style.color = '#0ff';
-            } else {
-                aimbotToggle.classList.remove('active');
-                aimbotStatus.innerHTML = '⚡ Nonaktif';
-                aimbotStatus.style.color = '#aaa';
-            }
-        });
-
-        // ========== AIM BODY TOGGLE ==========
-        const bodyToggle = document.getElementById('bodyToggle');
-        const bodyStatus = document.getElementById('bodyStatus');
-        let bodyActive = false;
-
-        bodyToggle.addEventListener('click', () => {
-            bodyActive = !bodyActive;
-            if (bodyActive) {
-                bodyToggle.classList.add('active');
-                bodyStatus.innerHTML = '✅ ACTIVE | Priority aim ke body aktif';
-                bodyStatus.style.color = '#0ff';
-            } else {
-                bodyToggle.classList.remove('active');
-                bodyStatus.innerHTML = '⚡ Nonaktif';
-                bodyStatus.style.color = '#aaa';
-            }
-        });
-
-        // ========== AIM LEHER TOGGLE ==========
-        const neckToggle = document.getElementById('neckToggle');
-        const neckStatus = document.getElementById('neckStatus');
-        let neckActive = false;
-
-        neckToggle.addEventListener('click', () => {
-            neckActive = !neckActive;
-            if (neckActive) {
-                neckToggle.classList.add('active');
-                neckStatus.innerHTML = '✅ ACTIVE | Target area: Leher (neck)';
-                neckStatus.style.color = '#0ff';
-            } else {
-                neckToggle.classList.remove('active');
-                neckStatus.innerHTML = '⚡ Nonaktif';
-                neckStatus.style.color = '#aaa';
-            }
-        });
-
-        // Efek tambahan: jika login sukses, header border berkilau
-        loginBtn.addEventListener('click', () => {
-            if (document.body.classList.contains('logged-in')) {
-                const header = document.querySelector('.panel-header');
-                header.style.borderBottom = '1px solid #0ff';
-                setTimeout(() => {
-                    header.style.borderBottom = '1px solid rgba(0, 255, 255, 0.5)';
-                }, 800);
-            }
-        });
+        })();
     </script>
 </body>
 </html>
